@@ -10,8 +10,6 @@ st.set_page_config(
     # },
 )
 
-st.sidebar.title("Tìm kiếm video")
-
 try:
     width = streamlit_js_eval(js_expressions="screen.width", key="SCR")
     height = width * 0.4
