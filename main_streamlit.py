@@ -30,7 +30,7 @@ def loadVideo(url):
 
     id = url.replace("https://www.youtube.com/watch?v=", "")
     html = f"""
-    <iframe height={height} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/{id}?si=HiPKZB_iyPiLh11m&amp;start=3" title="YouTube video player" width="100%">
+    <iframe height=500 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/{id}?si=HiPKZB_iyPiLh11m&amp;start=3" title="YouTube video player" width="100%">
     """
     st.markdown(html, unsafe_allow_html=True)
 

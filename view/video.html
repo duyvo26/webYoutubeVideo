@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" />
+    <title>
+        Video YouTube No Ads Private
+    </title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .video-thumbnail {
+            width: 100%;
+            height: auto;
+        }
+
+        .video-item {
+            margin-bottom: 20px;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #333;
+        }
+
+        .form-inline {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav {
+            z-index: 999;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .nav span {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav span:hover {
+            background-color: #575757;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nav">
+        <span onclick="set_home()">
+            Home
+        </span>
+    </div>
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-12 form-inline">
+                <input aria-label="Search" class="form-control" id="title_video" placeholder="Tìm kiếm video"
+                    type="search" />
+                <button class="btn btn-outline-success my-2" onclick="tim_video()">
+                    Tìm kiếm
+                </button>
+            </div>
+        </div>
+        <div class="row" id="video-iframe">
+            <!-- Video items will be inserted here by JavaScript -->
+        </div>
+        <div class="row" id="video-list">
+            <!-- Video items will be inserted here by JavaScript -->
+        </div>
+    </div>
+    <!-- Bootstrap JS and dependencies -->
+    <script crossorigin="anonymous" src="{{ url_for('static', filename='js/jquery-3.6.4.min.js') }}">
+    </script>
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Call loadSavedVideos() to load and display saved videos when needed
+            loadSavedVideos();
+            load_video("youtube : video");
+        });
+
+        function set_home() {
+            var videoIframe = document.getElementById("video-iframe");
+            videoIframe.innerHTML = "";
+        }
+
+        function tim_video() {
+            const videoList = document.getElementById('video-list');
+            var title = document.getElementById("title_video").value;
+            videoList.innerHTML = "";
+            videoList.innerHTML = 'Đang tìm video...';
+            load_video(title, true);
+        }
+
+        function generateRandomCode(length) {
+            let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+            let result = '';
+
+            for (let i = 0; i < length; i++) {
+                let randomIndex = Math.floor(Math.random() * characters.length);
+                result += characters.charAt(randomIndex);
+            }
+
+            return result;
+        }
+
+        function load_video(title, clear = false) {
+            const videoList = document.getElementById('video-list');
+            //videoList.innerHTML = 'Đang tìm video...';
+            $.ajax({
+                url: `/get-video`,
+                type: 'POST',
+                data: { title: title, },
+                success: function (data) {
+                    //console.log(data.html)
+                    //
+                    const videoList = document.getElementById('video-list');
+                    if (clear == true) {
+                        videoList.innerHTML = "";
+                    }
+                    data.html.forEach(video => {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-4 video-item';
+
+                        const card = document.createElement('div');
+                        card.className = 'card';
+
+                        const img = document.createElement('img');
+                        img.src = video.img;
+                        img.className = 'card-img-top video-thumbnail';
+                        img.alt = video.title;
+
+                        const cardBody = document.createElement('div');
+                        cardBody.className = 'card-body';
+
+                        const cardTitle = document.createElement('h5');
+                        cardTitle.className = 'card-title';
+
+                        const cardLink = document.createElement('a');
+                        //cardLink.href = video.href;
+                        cardLink.textContent = video.title;
+
+                        // Example usage when adding a video to your list
+                        cardLink.addEventListener('click', function () {
+                            // Construct the video object
+                            const videoObject = {
+                                title: "[Đã xem] " + video.title,
+                                img: video.img,
+                                href: video.href
+                            };
+
+                            // Save the video to localStorage
+                            saveVideoToLocalStorage(videoObject);
+
+                            // Clear the video list
+                            //videoList.innerHTML = "";
+
+                            // Create the iframe element
+                            var iframe = document.createElement('iframe');
+                            var height = parseInt(screen.height * 0.8);
+                            if (screen.height < 400) {
+                                height = parseInt(screen.height * 0.6);
+                            }
+                            iframe.height = height;
+                            iframe.width = "100%";
+                            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+                            iframe.allowFullscreen = true;
+                            iframe.frameBorder = "0";
+                            iframe.referrerPolicy = "strict-origin-when-cross-origin";
+                            let randomCode = generateRandomCode(12); // Ví dụ độ dài mã là 12
+                            iframe.src = "https://www.youtube-nocookie.com/embed/"+video.href;
+                            iframe.title = "YouTube video player";
+                            // Add custom CSS
+                            iframe.style.border = "none";  // Example of adding custom CSS
+                            iframe.style.marginBottom = "100px";  // Example of adding custom CSS
+                            // Append the iframe to the video list
+                            var videoIframe = document.getElementById("video-iframe");
+                            videoIframe.innerHTML = "";
+                            videoIframe.appendChild(iframe);
+                        });
+
+                        //<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/36vubT0bKfk?si=SSO2pW_sryF6_oKC" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>         cardTitle.appendChild(cardLink);
+                        cardTitle.appendChild(cardLink);
+                        cardBody.appendChild(cardTitle);
+                        card.appendChild(img);
+                        card.appendChild(cardBody);
+                        col.appendChild(card);
+
+                        videoList.appendChild(col);
+                    });
+                    //
+                },
+                error: function (error) {
+                    console.error('Error deleting code:', error);
+                }
+            });
+        }
+
+        // Function to save a video to localStorage if it doesn't already exist
+        function saveVideoToLocalStorage(video) {
+            // Retrieve existing videos from localStorage
+            let videos = JSON.parse(localStorage.getItem('savedVideos')) || [];
+
+            // Check if the video is already saved (checking by 'href' for uniqueness)
+            const isDuplicate = videos.some(v => v.href === video.href);
+
+            if (!isDuplicate) {
+                // Add the new video to the array
+                videos.push(video);
+
+                // Save the updated array back to localStorage
+                localStorage.setItem('savedVideos', JSON.stringify(videos));
+                console.log('Video saved successfully.');
+            } else {
+                console.log('Video already exists in localStorage.');
+            }
+        }
+
+
+
+
+        // Function to load saved videos from localStorage
+        function loadSavedVideos() {
+            const videoList = document.getElementById('video-list');
+            videoList.innerHTML = "";
+
+            // Retrieve saved videos from localStorage
+            const savedVideos = JSON.parse(localStorage.getItem('savedVideos')) || [];
+
+            // Iterate over saved videos and render them on the page
+            savedVideos.forEach(video => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 video-item';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const img = document.createElement('img');
+                img.src = video.img;
+                img.className = 'card-img-top video-thumbnail';
+                img.alt = video.title;
+
+                const cardBody = document.createElement('div');
+                cardBody.className = 'card-body';
+
+                const cardTitle = document.createElement('h5');
+                cardTitle.className = 'card-title';
+
+                const cardLink = document.createElement('a');
+                cardLink.textContent = video.title;
+
+                cardLink.addEventListener('click', function () {
+                    // Clear the video list
+                    //videoList.innerHTML = "";
+
+                    // Create the iframe element
+                    var iframe = document.createElement('iframe');
+                    var height = parseInt(screen.height * 0.8);
+                    if (screen.height < 400) {
+                        height = parseInt(screen.height * 0.6);
+                    }
+                    iframe.height = height;
+                    iframe.width = "100%";
+                    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+                    iframe.allowFullscreen = true;
+                    iframe.frameBorder = "0";
+                    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+                    let randomCode = generateRandomCode(12); // Ví dụ độ dài mã là 12
+                    iframe.src = "https://www.youtube-nocookie.com/embed/" + video.href;
+                    iframe.title = "YouTube video player";
+
+                    // Add custom CSS
+                    iframe.style.border = "none";
+                    iframe.style.marginBottom = "100px";
+
+                    // Append the iframe to the video list
+                    var videoIframe = document.getElementById("video-iframe");
+                    videoIframe.innerHTML = "";
+                    videoIframe.appendChild(iframe);
+                });
+
+                cardTitle.appendChild(cardLink);
+                cardBody.appendChild(cardTitle);
+                card.appendChild(img);
+                card.appendChild(cardBody);
+                col.appendChild(card);
+
+                videoList.appendChild(col);
+            });
+        }
+
+    </script>
+</body>
+
+</html>
